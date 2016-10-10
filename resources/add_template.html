@@ -1,0 +1,13 @@
+You have added the following tracks to the <a href={{{playList.url}}}>{{playList.name}}</a>:
+{{ each tracks }}
+<div>
+    <img src="{{{loop_vars.tracks.image.url}}}" /><br />
+    <p>
+        <a href="{{{loop_vars.tracks.preview_url}}}">{{loop_vars.tracks.name}}</a><br />
+        By:
+        {{ each loop_vars.tracks.artists }}
+            {{loop_vars.tracks.artists.name}}
+        {{ end}}
+    </p>
+</div>
+{{ end }}

@@ -1,0 +1,39 @@
+{
+    "playList": {
+        "name": "test",
+        "url": "https://open.spotify.com/user/haybien/playlist/2GedPwtB9YnAW95E5pWDNJ"
+    },
+    "action": "Add",
+    "tracks": [
+        {
+            "id": "1zHlj4dQ8ZAtrayhuDDmkY",
+            "name": "Timber",
+            "uri": "spotify:track:1zHlj4dQ8ZAtrayhuDDmkY",
+            "preview_url": "https://p.scdn.co/mp3-preview/ecb1639c58ceb6311919373fe56399e3ec242045",
+            "artists": [ {
+                "external_urls" : {
+                  "spotify" : "https://open.spotify.com/artist/0TnOYISbd1XYRBk9myaseg"
+                },
+                "href" : "https://api.spotify.com/v1/artists/0TnOYISbd1XYRBk9myaseg",
+                "id" : "0TnOYISbd1XYRBk9myaseg",
+                "name" : "Pitbull",
+                "type" : "artist",
+                "uri" : "spotify:artist:0TnOYISbd1XYRBk9myaseg"
+              }, {
+                "external_urls" : {
+                  "spotify" : "https://open.spotify.com/artist/6LqNN22kT3074XbTVUrhzX"
+                },
+                "href" : "https://api.spotify.com/v1/artists/6LqNN22kT3074XbTVUrhzX",
+                "id" : "6LqNN22kT3074XbTVUrhzX",
+                "name" : "Kesha",
+                "type" : "artist",
+                "uri" : "spotify:artist:6LqNN22kT3074XbTVUrhzX"
+              } ],
+            "image": {
+                "height" : 64,
+                "url" : "https://i.scdn.co/image/2fbda0496761c99c8289a2a4bfa2e710af5ea2d1",
+                "width" : 64
+            }
+        }
+    ]
+}

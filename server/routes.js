@@ -1,5 +1,6 @@
 'use strict';
 
+const SparkPost = require('sparkpost');
 const firebase = require("firebase");
 const Spotify = require('spotify-web-api-node');
 const router = new require('express').Router();
@@ -20,12 +21,20 @@ const spotifyApi = new Spotify({
   redirectUri: process.env.SPOTIFY_REDIRECT_URL
 });
 
+// Phase I: Hardcoded Playlist
+//spotify:user:haybien:playlist:2GedPwtB9YnAW95E5pWDNJ
+const SPOTIFY_PLAYLIST_URL = 'https://open.spotify.com/user/haybien/playlist/2GedPwtB9YnAW95E5pWDNJ';
+const SPOTIFY_USERNAME = 'haybien';
+const SPOTIFY_PLAYLIST_ID = '2GedPwtB9YnAW95E5pWDNJ';
+
 // configure firebase
 firebase.initializeApp({
   apiKey: process.env.FIREBASE_API_KEY,
 	authDomain: process.env.FIREBASE_AUTH_DOMAIN,
   databaseURL: process.env.FIREBASE_URL
 });
+
+const sparky = new SparkPost();
 
 const listen = () => {
   const db = firebase.database();
@@ -35,24 +44,58 @@ const listen = () => {
     console.log('Recieved and Processing email');
     snapshot.forEach(item => {
       const data = relayParser.processRelayMessage(item.val().msys.relay_message);
-      console.log(data);
-      const query = `track:${data.track}` + data.artist ? ` artist:${data.artist}` : '';
-      spotifyApi.searchTracks(query)
-        .then(data => {
-          console.log('Track Found: ', data.body.tracks.items[0].uri);
-          const tracks = [data.body.tracks.items[0].uri];
-          spotifyApi.addTracksToPlaylist('haybien', '2GedPwtB9YnAW95E5pWDNJ', tracks)
-            .then(function(data) {
-              console.log('Added tracks to playlist!');
-            }, function(err) {
-              console.log('Something went wrong!', err);
-            });
+      const subData = {
+        playList: {
+          name: data.playList,
+          url: SPOTIFY_PLAYLIST_URL
+        },
+        action: data.action
+      }
+      console.log(`${data.playList}: ${data.action}`);
+      const searches = data.tracks.map(item => {
+        const query = `track:${item.track}` + (item.artist ? ` artist:${item.artist}` : '');
+        console.log('Search Query: ', query);
+        return spotifyApi.searchTracks(query);
+      });
+      Promise.all(searches)
+        .then(results => {
+          return results.map(result => {
+            const track = result.body.tracks.items[0];
+            return {
+              id: track.id,
+              name: track.name,
+              uri: track.uri,
+              preview_url: track.preview_url,
+              artists: track.artists,
+              //image: track.album.images[track.album.images.length - 1]
+              image: track.album.images[1]
+            };
+          });
+        })
+        .then(tracks => {
+          subData.tracks = tracks;
+          const uris = tracks.map(track => {
+            return track.uri;
+          });
+          return spotifyApi.addTracksToPlaylist(SPOTIFY_USERNAME, SPOTIFY_PLAYLIST_ID, uris)
+        })
+        .then(result => {
+          console.log('Added tracks to playlist!', subData.tracks);
+          console.log('Sending confirmation to ', data.msg_from);
+          return sparky.transmissions.send({
+            campaign_id: 'sparkpost-party',
+            content: {
+              template_id: 'spark-post-party-add'
+            },
+            substitution_data: subData,
+            recipients: [{ address: { email: data.msg_from } }]
+          });
         })
         .catch(err => {
-          console.log('An error occurred finding track', err);
+          console.log('Something went wrong!', err);
         });
+      ref.child(snapshot.key).remove();
   	});
-    //spotify:user:haybien:playlist:2GedPwtB9YnAW95E5pWDNJ
   }, err => {
     console.log(err);
   });
