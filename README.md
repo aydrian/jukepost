@@ -8,12 +8,12 @@ This application will utilize [SparkPost][1] to add songs to a [Spotify](https:/
 To add a song to a playlist, send an email to `{playlist}`@listen.aydrian.me. Set the subject to Add and place the songs in the body in the format `{title}` by `{artist}`. You may add multiple songs in a single message.
 
 ### Example message
-`TO:` test@listen.aydrian.me
-`SUBJECT:` Add
-`BODY:`
-Closer by The Chainsmokers
-Into You by Ariana Grande
-Stitches by Shawn Mendes
+`TO:` test@listen.aydrian.me<br />
+`SUBJECT:` Add<br />
+`BODY:`<br />
+Closer by The Chainsmokers<br />
+Into You by Ariana Grande<br />
+Stitches by Shawn Mendes<br />
 
 
 [1]: https://www.sparkpost.com/
