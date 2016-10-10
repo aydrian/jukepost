@@ -15,6 +15,8 @@ Closer by The Chainsmokers<br />
 Into You by Ariana Grande<br />
 Stitches by Shawn Mendes<br />
 
+#### Sample Email Response
+![Sample Email Response](/resources/sparkpost_party_email.png)
 
 [1]: https://www.sparkpost.com/
 [2]: https://app.sparkpost.com/sign-up?src=Dev-Website&sfdcid=701600000011daf&_ga=1.204138960.1347218848.1425988764
