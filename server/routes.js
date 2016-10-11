@@ -14,11 +14,13 @@ const STATE_KEY = 'spotify_auth_state';
 // your application requests authorization
 const SPOTIFY_SCOPES = ['user-read-private', 'user-read-email', 'playlist-modify-public', 'playlist-modify-private'];
 
+let isListening = false;
+
 // configure spotify
 const spotifyApi = new Spotify({
-  clientId: process.env.SPOTIFY_CLIENT_ID,
-  clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-  redirectUri: process.env.SPOTIFY_REDIRECT_URL
+  clientId: SPOTIFY_CLIENT_ID,
+  clientSecret: SPOTIFY_CLIENT_SECRET,
+  redirectUri: SPOTIFY_REDIRECT_URL
 });
 
 // Phase I: Hardcoded Playlist
@@ -30,15 +32,20 @@ const SPOTIFY_PLAYLIST_ID = '2GedPwtB9YnAW95E5pWDNJ';
 // configure firebase
 firebase.initializeApp({
   apiKey: process.env.FIREBASE_API_KEY,
-	authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
   databaseURL: process.env.FIREBASE_URL
 });
 
 const sparky = new SparkPost();
 
 const listen = () => {
+  if (isListening) {
+    console.log('Already listening for raw-inbound events.')
+    return;
+  }
   const db = firebase.database();
   const ref = db.ref('raw-inbound');
+  isListening = true;
 
   ref.on('child_added', snapshot => {
     console.log('Recieved and Processing email');
@@ -139,7 +146,7 @@ router.get('/callback', (req, res) => {
       //res.redirect(`/#/user/${access_token}/${refresh_token}`);
       console.log('Starting service');
       listen();
-      console.log(data.body);
+      //console.log(data.body);
       res.send(data.body);
     }).catch(err => {
       //res.redirect('/#/error/invalid token');
