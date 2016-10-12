@@ -24,10 +24,18 @@ const spotifyApi = new Spotify({
 });
 
 // Phase I: Hardcoded Playlist
-//spotify:user:haybien:playlist:2GedPwtB9YnAW95E5pWDNJ
-const SPOTIFY_PLAYLIST_URL = 'https://open.spotify.com/user/haybien/playlist/2GedPwtB9YnAW95E5pWDNJ';
+// ManhattanJS
+// spotify:user:haybien:playlist:6wXvfZ2Lyi3l2KdpDEyBHz
+// https://open.spotify.com/user/haybien/playlist/6wXvfZ2Lyi3l2KdpDEyBHz
+// test
+// spotify:user:haybien:playlist:2GedPwtB9YnAW95E5pWDNJ
+// https://open.spotify.com/user/haybien/playlist/2GedPwtB9YnAW95E5pWDNJ
+// SparkPostDev
+// spotify:user:haybien:playlist:1DAAiQcMus9as2DmwnwYwi
+// https://open.spotify.com/user/haybien/playlist/1DAAiQcMus9as2DmwnwYwi
+const SPOTIFY_PLAYLIST_URL = 'https://open.spotify.com/user/haybien/playlist/6wXvfZ2Lyi3l2KdpDEyBHz';
 const SPOTIFY_USERNAME = 'haybien';
-const SPOTIFY_PLAYLIST_ID = '2GedPwtB9YnAW95E5pWDNJ';
+const SPOTIFY_PLAYLIST_ID = '6wXvfZ2Lyi3l2KdpDEyBHz';
 
 // configure firebase
 firebase.initializeApp({
