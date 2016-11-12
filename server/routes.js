@@ -33,9 +33,12 @@ const spotifyApi = new Spotify({
 // SparkPostDev
 // spotify:user:haybien:playlist:1DAAiQcMus9as2DmwnwYwi
 // https://open.spotify.com/user/haybien/playlist/1DAAiQcMus9as2DmwnwYwi
-const SPOTIFY_PLAYLIST_URL = 'https://open.spotify.com/user/haybien/playlist/6wXvfZ2Lyi3l2KdpDEyBHz';
+// MLHPrime
+// spotify:user:haybien:playlist:0VN4YEYMUHW9pctJ4NLNTT
+// https://open.spotify.com/user/haybien/playlist/0VN4YEYMUHW9pctJ4NLNTT
+const SPOTIFY_PLAYLIST_URL = 'https://open.spotify.com/user/haybien/playlist/0VN4YEYMUHW9pctJ4NLNTT';
 const SPOTIFY_USERNAME = 'haybien';
-const SPOTIFY_PLAYLIST_ID = '6wXvfZ2Lyi3l2KdpDEyBHz';
+const SPOTIFY_PLAYLIST_ID = '0VN4YEYMUHW9pctJ4NLNTT';
 
 // configure firebase
 firebase.initializeApp({
