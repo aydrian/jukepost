@@ -4,6 +4,7 @@ const SparkPost = require('sparkpost')
 const firebase = require('firebase')
 const Spotify = require('spotify-web-api-node')
 const router = new require('express').Router() // eslint-disable-line no-new-require, new-cap
+const logger = require('./logger')('verbose')
 const common = require('./common')
 const relayParser = require('./relay_parser')
 // configure the express server
@@ -39,7 +40,7 @@ const sparky = new SparkPost()
 
 const listen = () => {
   if (isListening) {
-    console.log('Already listening for raw-inbound events.')
+    logger.warn('Already listening for raw-inbound events.')
     return
   }
   const db = firebase.database()
@@ -47,7 +48,7 @@ const listen = () => {
   isListening = true
 
   ref.on('child_added', snapshot => {
-    console.log('Recieved and Processing email')
+    logger.verbose('Recieved and Processing email')
     snapshot.forEach(item => {
       const data = relayParser.processRelayMessage(item.val().msys.relay_message)
       const subData = {
@@ -57,13 +58,13 @@ const listen = () => {
         },
         action: data.action
       }
-      console.log(`${data.playList}: ${data.action}`)
+      logger.verbose(`${data.playList}: ${data.action}`)
       const searches = data.tracks.map(item => {
         const query = `track:${item.track}` + (item.artist ? ` artist:${item.artist}` : '')
-        console.log('Search Query: ', query)
+        logger.verbose('Search Query: ', query)
         return spotifyApi.searchTracks(query)
           .catch(err => {
-            console.log(`Error searching for ${query}`, err)
+            logger.error(`Error searching for ${query}`, err)
           })
       })
       Promise.all(searches)
@@ -89,8 +90,8 @@ const listen = () => {
           return spotifyApi.addTracksToPlaylist(SPOTIFY_USERNAME, SPOTIFY_PLAYLIST_ID, uris)
         })
         .then(result => {
-          console.log('Added tracks to playlist!', subData.tracks)
-          console.log('Sending confirmation to ', data.msg_from)
+          logger.verbose('Added tracks to playlist!', subData.tracks)
+          logger.verbose('Sending confirmation to ', data.msg_from)
           return sparky.transmissions.send({
             campaign_id: 'sparkpost-party',
             content: {
@@ -101,12 +102,12 @@ const listen = () => {
           })
         })
         .catch(err => {
-          console.log('Something went wrong!', err)
+          logger.error('Something went wrong!', err)
         })
       ref.child(snapshot.key).remove()
     })
   }, err => {
-    console.log(err)
+    logger.error(err)
   })
 }
 
@@ -141,18 +142,18 @@ router.get('/callback', (req, res) => {
 
       // use the access token to access the Spotify Web API
       /* spotifyApi.getMe().then((data) => {
-        console.log(data.body);
+        logger.verbose(data.body);
       })*/
 
       // we can also pass the token to the browser to make requests from there
       // res.redirect(`/#/user/${access_token}/${refresh_token}`)
-      console.log('Starting service')
+      logger.verbose('Starting service')
       listen()
-      // console.log(data.body)
+      // logger.verbose(data.body)
       res.send(data.body)
     }).catch(err => {
       // res.redirect('/#/error/invalid token')
-      console.log(err)
+      logger.error(err)
       res.send('error')
     })
   }
@@ -181,7 +182,7 @@ router.get('/refresh_token', (req, res) => {
       })
     })
     .catch(err => {
-      console.log(err)
+      logger.error(err)
       res.redirect('/#/error/invalid token')
     })
 })

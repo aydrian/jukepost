@@ -2,23 +2,24 @@
   "name": "sparkpost-party",
   "version": "0.1.0",
   "engines": {
-    "node": "4.4.4"
+    "node": "6.9.2"
   },
   "private": true,
   "devDependencies": {
-    "react-scripts": "^0.7.0"
+    "react-scripts": "0.8.5"
   },
   "dependencies": {
-    "body-parser": "^1.15.2",
+    "body-parser": "^1.16.0",
     "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
-    "firebase": "^3.4.1",
+    "firebase": "^3.6.7",
     "querystring": "^0.2.0",
-    "react": "^15.3.2",
-    "react-dom": "^15.3.2",
-    "request": "^2.75.0",
-    "sparkpost": "^2.0.1",
-    "spotify-web-api-node": "^2.3.5"
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "request": "^2.79.0",
+    "sparkpost": "^2.1.2",
+    "spotify-web-api-node": "^2.3.5",
+    "winston": "^2.3.1"
   },
   "scripts": {
     "start": "react-scripts start",

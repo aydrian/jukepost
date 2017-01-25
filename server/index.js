@@ -4,7 +4,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const routes = require('./routes')
-// const firebase = require('firebase')
+const logger = require('./logger')('verbose')
 
 const app = express()
 
@@ -15,5 +15,5 @@ app.use(cookieParser())
 app.use('/', routes)
 
 app.listen(app.get('port'), function () {
-  console.log('Express server listening on port ' + app.get('port'))
+  logger.verbose('Express server listening on port ' + app.get('port'))
 })
