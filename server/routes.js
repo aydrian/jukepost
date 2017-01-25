@@ -133,17 +133,17 @@ router.get('/callback', (req, res) => {
     // Retrieve an access token and a refresh token
     spotifyApi.authorizationCodeGrant(code).then(data => {
       // const { expires_in, access_token, refresh_token } = data.body
-      const access_token = data.body.access_token
-      const refresh_token = data.body.refresh_token
+      const accessToken = data.body.access_token
+      const refreshToken = data.body.refresh_token
 
       // Set the access token on the API object to use it in later calls
-      spotifyApi.setAccessToken(access_token)
-      spotifyApi.setRefreshToken(refresh_token)
+      spotifyApi.setAccessToken(accessToken)
+      spotifyApi.setRefreshToken(refreshToken)
 
       // use the access token to access the Spotify Web API
       /* spotifyApi.getMe().then((data) => {
         logger.verbose(data.body);
-      })*/
+      }) */
 
       // we can also pass the token to the browser to make requests from there
       // res.redirect(`/#/user/${access_token}/${refresh_token}`)
@@ -174,11 +174,11 @@ router.get('/refresh_token', (req, res) => {
   spotifyApi.refreshAccessToken()
     .then(data => {
       // const { access_token } = data.body
-      const access_token = data.body.access_token
-      spotifyApi.setAccessToken(access_token)
+      const accessToken = data.body.access_token
+      spotifyApi.setAccessToken(accessToken)
       // we can also pass the token to the browser to make requests from there
       res.send({
-        'access_token': access_token
+        'access_token': accessToken
       })
     })
     .catch(err => {
