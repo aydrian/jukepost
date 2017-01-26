@@ -7,29 +7,19 @@ const router = new require('express').Router() // eslint-disable-line no-new-req
 const logger = require('./logger')('verbose')
 const common = require('./common')
 const relayParser = require('./relay_parser')
-// configure the express server
-const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID
-const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET
-const SPOTIFY_REDIRECT_URL = process.env.SPOTIFY_REDIRECT_URL || 'http://localhost:3001/callback'
+// configure spotify
+const spotifyApi = new Spotify({
+  clientId: process.env.SPOTIFY_CLIENT_ID,
+  clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+  redirectUri: process.env.SPOTIFY_REDIRECT_URL || 'http://localhost:3001/callback'
+})
 const STATE_KEY = 'spotify_auth_state'
 // your application requests authorization
-const SPOTIFY_SCOPES = ['user-read-private', 'user-read-email', 'playlist-modify-public'] // , 'playlist-modify-private']
-
-// configure your playlist
-// const SPOTIFY_PLAYLIST_URL = process.env.SPOTIFY_PLAYLIST_URL
-// const SPOTIFY_USERNAME = process.env.SPOTIFY_USERNAME
-// const SPOTIFY_PLAYLIST_ID = process.env.SPOTIFY_PLAYLIST_ID
+const SPOTIFY_SCOPES = ['user-read-private', 'user-read-email', 'playlist-modify-public', 'playlist-read-collaborative']
 
 let isListening = false
 let myPlaylists = {}
 let currentUser = {}
-
-// configure spotify
-const spotifyApi = new Spotify({
-  clientId: SPOTIFY_CLIENT_ID,
-  clientSecret: SPOTIFY_CLIENT_SECRET,
-  redirectUri: SPOTIFY_REDIRECT_URL
-})
 
 // configure firebase
 firebase.initializeApp({
@@ -64,7 +54,7 @@ const listen = () => {
       const subData = {
         playList: {
           name: data.playList,
-          url: playlist.external_urls.spotify // SPOTIFY_PLAYLIST_URL
+          url: playlist.external_urls.spotify
         },
         action: data.action
       }
@@ -77,7 +67,8 @@ const listen = () => {
             logger.error(`Error searching for ${query}`, err)
           })
       })
-      Promise.all(searches)
+      Promise
+        .all(searches)
         .then(results => {
           return results.map(result => {
             const track = result.body.tracks.items[0]
@@ -97,7 +88,6 @@ const listen = () => {
           const uris = tracks.map(track => {
             return track.uri
           })
-          // return spotifyApi.addTracksToPlaylist(SPOTIFY_USERNAME, SPOTIFY_PLAYLIST_ID, uris)
           return spotifyApi.addTracksToPlaylist(currentUser.id, playlist.id, uris)
         })
         .then(result => {
@@ -142,59 +132,62 @@ router.get('/callback', (req, res) => {
   } else {
     res.clearCookie(STATE_KEY)
     // Retrieve an access token and a refresh token
-    spotifyApi.authorizationCodeGrant(code).then(data => {
-      // const { expires_in, access_token, refresh_token } = data.body
-      const accessToken = data.body.access_token
-      const refreshToken = data.body.refresh_token
+    spotifyApi
+      .authorizationCodeGrant(code)
+      .then(data => {
+        // const { expires_in, access_token, refresh_token } = data.body
+        const accessToken = data.body.access_token
+        const refreshToken = data.body.refresh_token
 
-      // Set the access token on the API object to use it in later calls
-      spotifyApi.setAccessToken(accessToken)
-      spotifyApi.setRefreshToken(refreshToken)
+        // Set the access token on the API object to use it in later calls
+        spotifyApi.setAccessToken(accessToken)
+        spotifyApi.setRefreshToken(refreshToken)
 
-      // use the access token to access the Spotify Web API
-      logger.verbose(`Retrieving User Info`)
-      spotifyApi
-        .getMe()
-        .then(({ body }) => {
-          currentUser = body
+        // use the access token to access the Spotify Web API
+        logger.verbose(`Retrieving User Info`)
+        spotifyApi
+          .getMe()
+          .then(({ body }) => {
+            currentUser = body
 
-          logger.verbose(`Retrieving Playlists for ${currentUser.id}`)
-          spotifyApi
-            .getUserPlaylists(null, {limit: 50})
-            .then(data => data.body)
-            .then(processPlaylists)
-            .then((lists) => {
-              logger.verbose(`Processed ${Object.keys(lists).length} Playlists`)
-              myPlaylists = lists
+            logger.verbose(`Retrieving Playlists for ${currentUser.id}`)
+            spotifyApi
+              .getUserPlaylists(null, {limit: 50})
+              .then(data => data.body)
+              .then(processPlaylists)
+              .then((lists) => {
+                logger.verbose(`Processed ${Object.keys(lists).length} Playlists`)
+                myPlaylists = lists
 
-              logger.verbose('Starting service')
-              listen()
-            })
-            .catch((err) => {
-              logger.error(err)
-            })
-        })
-        .catch((err) => {
-          logger.error(err)
-        })
+                logger.verbose('Starting service')
+                listen()
+              })
+              .catch((err) => {
+                logger.error(err)
+              })
+          })
+          .catch((err) => {
+            logger.error(err)
+          })
 
-      // we can also pass the token to the browser to make requests from there
-      // res.redirect(`/#/user/${access_token}/${refresh_token}`)
+        // we can also pass the token to the browser to make requests from there
+        // res.redirect(`/#/user/${access_token}/${refresh_token}`)
 
-      // logger.verbose(data.body)
-      res.send(data.body)
-    }).catch(err => {
-      // res.redirect('/#/error/invalid token')
-      logger.error(err)
-      res.send('error')
-    })
+        // logger.verbose(data.body)
+        res.send(data.body)
+      })
+      .catch(err => {
+        // res.redirect('/#/error/invalid token')
+        logger.error(err)
+        res.send('error')
+      })
   }
 })
 
 const processPlaylists = (data) => {
   let hash = {}
   data.items.forEach((list) => {
-    if (list.owner.id === currentUser.id) {
+    if (list.collaborative && list.owner.id === currentUser.id) {
       hash[list.name.toLowerCase()] = list
     }
   })
@@ -202,7 +195,8 @@ const processPlaylists = (data) => {
 }
 
 router.get('/user-playlists', (req, res) => {
-  spotifyApi.getUserPlaylists(null, {limit: 50})
+  spotifyApi
+    .getUserPlaylists()
     .then(data => {
       res.json(data.body)
     })
@@ -213,7 +207,8 @@ router.get('/user-playlists', (req, res) => {
 
 router.get('/refresh_token', (req, res) => {
   // requesting access token from refresh token
-  spotifyApi.refreshAccessToken()
+  spotifyApi
+    .refreshAccessToken()
     .then(data => {
       // const { access_token } = data.body
       const accessToken = data.body.access_token
