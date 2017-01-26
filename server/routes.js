@@ -44,10 +44,20 @@ const listen = () => {
     snapshot.forEach(item => {
       const data = relayParser.processRelayMessage(item.val().msys.relay_message)
       const playlist = myPlaylists[data.playList.toLowerCase()]
-      console.log(playlist)
       if (!playlist) {
-        // TODO: Send reply with error.
         logger.warn(`Playlist ${data.playList} not found.`)
+        sparky.transmissions.send({
+          campaign_id: 'sparkpost-party',
+          content: {
+            template_id: 'spark-post-party-not-found'
+          },
+          substitution_data: {
+            type: 'playlist',
+            name: data.playList,
+            spotifyUser: currentUser.id
+          },
+          recipients: [{ address: { email: data.msg_from } }]
+        })
         ref.child(snapshot.key).remove()
         return
       }
