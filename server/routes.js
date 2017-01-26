@@ -16,9 +16,9 @@ const STATE_KEY = 'spotify_auth_state'
 const SPOTIFY_SCOPES = ['user-read-private', 'user-read-email', 'playlist-modify-public'] // , 'playlist-modify-private']
 
 // configure your playlist
-const SPOTIFY_PLAYLIST_URL = process.env.SPOTIFY_PLAYLIST_URL
-const SPOTIFY_USERNAME = process.env.SPOTIFY_USERNAME
-const SPOTIFY_PLAYLIST_ID = process.env.SPOTIFY_PLAYLIST_ID
+// const SPOTIFY_PLAYLIST_URL = process.env.SPOTIFY_PLAYLIST_URL
+// const SPOTIFY_USERNAME = process.env.SPOTIFY_USERNAME
+// const SPOTIFY_PLAYLIST_ID = process.env.SPOTIFY_PLAYLIST_ID
 
 let isListening = false
 let myPlaylists = {}
@@ -55,7 +55,7 @@ const listen = () => {
       const data = relayParser.processRelayMessage(item.val().msys.relay_message)
       const playlist = myPlaylists[data.playList.toLowerCase()]
       console.log(playlist)
-      if(!playlist) {
+      if (!playlist) {
         // TODO: Send reply with error.
         logger.warn(`Playlist ${data.playList} not found.`)
         ref.child(snapshot.key).remove()
@@ -178,7 +178,6 @@ router.get('/callback', (req, res) => {
           logger.error(err)
         })
 
-
       // we can also pass the token to the browser to make requests from there
       // res.redirect(`/#/user/${access_token}/${refresh_token}`)
 
@@ -195,7 +194,7 @@ router.get('/callback', (req, res) => {
 const processPlaylists = (data) => {
   let hash = {}
   data.items.forEach((list) => {
-    if (list.owner.id === SPOTIFY_USERNAME) {
+    if (list.owner.id === currentUser.id) {
       hash[list.name.toLowerCase()] = list
     }
   })
