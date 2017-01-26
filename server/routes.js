@@ -13,7 +13,7 @@ const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET
 const SPOTIFY_REDIRECT_URL = process.env.SPOTIFY_REDIRECT_URL || 'http://localhost:3001/callback'
 const STATE_KEY = 'spotify_auth_state'
 // your application requests authorization
-const SPOTIFY_SCOPES = ['user-read-private', 'user-read-email', 'playlist-modify-public', 'playlist-modify-private']
+const SPOTIFY_SCOPES = ['user-read-private', 'user-read-email', 'playlist-modify-public'] // , 'playlist-modify-private']
 
 // configure your playlist
 const SPOTIFY_PLAYLIST_URL = process.env.SPOTIFY_PLAYLIST_URL
@@ -21,6 +21,8 @@ const SPOTIFY_USERNAME = process.env.SPOTIFY_USERNAME
 const SPOTIFY_PLAYLIST_ID = process.env.SPOTIFY_PLAYLIST_ID
 
 let isListening = false
+let myPlaylists = {}
+let currentUser = {}
 
 // configure spotify
 const spotifyApi = new Spotify({
@@ -51,10 +53,18 @@ const listen = () => {
     logger.verbose('Recieved and Processing email')
     snapshot.forEach(item => {
       const data = relayParser.processRelayMessage(item.val().msys.relay_message)
+      const playlist = myPlaylists[data.playList.toLowerCase()]
+      console.log(playlist)
+      if(!playlist) {
+        // TODO: Send reply with error.
+        logger.warn(`Playlist ${data.playList} not found.`)
+        ref.child(snapshot.key).remove()
+        return
+      }
       const subData = {
         playList: {
           name: data.playList,
-          url: SPOTIFY_PLAYLIST_URL
+          url: playlist.external_urls.spotify // SPOTIFY_PLAYLIST_URL
         },
         action: data.action
       }
@@ -87,7 +97,8 @@ const listen = () => {
           const uris = tracks.map(track => {
             return track.uri
           })
-          return spotifyApi.addTracksToPlaylist(SPOTIFY_USERNAME, SPOTIFY_PLAYLIST_ID, uris)
+          // return spotifyApi.addTracksToPlaylist(SPOTIFY_USERNAME, SPOTIFY_PLAYLIST_ID, uris)
+          return spotifyApi.addTracksToPlaylist(currentUser.id, playlist.id, uris)
         })
         .then(result => {
           logger.verbose('Added tracks to playlist!', subData.tracks)
@@ -141,14 +152,36 @@ router.get('/callback', (req, res) => {
       spotifyApi.setRefreshToken(refreshToken)
 
       // use the access token to access the Spotify Web API
-      /* spotifyApi.getMe().then((data) => {
-        logger.verbose(data.body);
-      }) */
+      logger.verbose(`Retrieving User Info`)
+      spotifyApi
+        .getMe()
+        .then(({ body }) => {
+          currentUser = body
+
+          logger.verbose(`Retrieving Playlists for ${currentUser.id}`)
+          spotifyApi
+            .getUserPlaylists(null, {limit: 50})
+            .then(data => data.body)
+            .then(processPlaylists)
+            .then((lists) => {
+              logger.verbose(`Processed ${Object.keys(lists).length} Playlists`)
+              myPlaylists = lists
+
+              logger.verbose('Starting service')
+              listen()
+            })
+            .catch((err) => {
+              logger.error(err)
+            })
+        })
+        .catch((err) => {
+          logger.error(err)
+        })
+
 
       // we can also pass the token to the browser to make requests from there
       // res.redirect(`/#/user/${access_token}/${refresh_token}`)
-      logger.verbose('Starting service')
-      listen()
+
       // logger.verbose(data.body)
       res.send(data.body)
     }).catch(err => {
@@ -159,8 +192,18 @@ router.get('/callback', (req, res) => {
   }
 })
 
+const processPlaylists = (data) => {
+  let hash = {}
+  data.items.forEach((list) => {
+    if (list.owner.id === SPOTIFY_USERNAME) {
+      hash[list.name.toLowerCase()] = list
+    }
+  })
+  return hash
+}
+
 router.get('/user-playlists', (req, res) => {
-  spotifyApi.getUserPlaylists()
+  spotifyApi.getUserPlaylists(null, {limit: 50})
     .then(data => {
       res.json(data.body)
     })
