@@ -47,9 +47,9 @@ const listen = () => {
       if (!playlist) {
         logger.warn(`Playlist ${data.playList} not found.`)
         sparky.transmissions.send({
-          campaign_id: 'sparkpost-party',
+          campaign_id: 'jukepost',
           content: {
-            template_id: 'spark-post-party-not-found'
+            template_id: 'juke-post-not-found'
           },
           substitution_data: {
             type: 'playlist',
@@ -104,9 +104,9 @@ const listen = () => {
           logger.verbose('Added tracks to playlist!', subData.tracks)
           logger.verbose('Sending confirmation to ', data.msg_from)
           return sparky.transmissions.send({
-            campaign_id: 'sparkpost-party',
+            campaign_id: 'jukepost',
             content: {
-              template_id: 'spark-post-party-add'
+              template_id: 'juke-post-add'
             },
             substitution_data: subData,
             recipients: [{ address: { email: data.msg_from } }]

@@ -1,6 +1,6 @@
 <a href="https://developers.sparkpost.com"><img src="https://www.sparkpost.com/sites/default/files/attachments/SparkPost_Logo_2-Color_Gray-Orange_RGB.svg" width="200px"/></a>
 
-# :tada: SparkPost Party :tada:
+# JukePost :notes:
 
 This application will utilize [SparkPost][1] to add songs to a [Spotify](https://www.spotify.com/) Playlist.
 
@@ -14,5 +14,5 @@ To add a song to a playlist, send an email to `{playlist}`@listen.aydrian.me. Se
 ![Sample Email Response](/resources/sparkpost_party_email.png)
 
 [1]: https://www.sparkpost.com/
-[2]: https://app.sparkpost.com/sign-up?src=Dev-Website&sfdcid=701600000011daf&_ga=1.204138960.1347218848.1425988764
+[2]: https://app.sparkpost.com/sign-up?src=Dev-Website&sfdcid=701600000011daf
 [3]: https://developers.sparkpost.com/
