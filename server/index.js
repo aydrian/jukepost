@@ -4,7 +4,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const routes = require('./routes')
-const logger = require('./logger')('verbose')
+const logger = require('./config/logger')('verbose')
 
 const app = express()
 
