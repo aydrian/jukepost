@@ -19,9 +19,9 @@ const listen = module.exports = ({currentUser, myPlaylists}) => {
     logger.warn('Already listening for raw-inbound events.')
     return
   }
-  const db = firebase.database()
-  const ref = db.ref('raw-inbound')
+  const ref = firebase.database().ref('raw-inbound')
   isListening = true
+  logger.verbose('Listening for raw-inbound events.')
 
   ref.on('child_added', snapshot => {
     logger.verbose('Recieved and Processing email')
@@ -30,17 +30,10 @@ const listen = module.exports = ({currentUser, myPlaylists}) => {
       const playlist = myPlaylists[data.playList.toLowerCase()]
       if (!playlist) {
         logger.warn(`Playlist ${data.playList} not found.`)
-        sparky.transmissions.send({
-          campaign_id: 'jukepost',
-          content: {
-            template_id: 'juke-post-not-found'
-          },
-          substitution_data: {
-            type: 'playlist',
-            name: data.playList,
-            spotifyUser: currentUser.id
-          },
-          recipients: [{ address: { email: data.msg_from } }]
+        sendPlayListNotFound(data.msg_from, {
+          type: 'playlist',
+          name: data.playList,
+          spotifyUser: currentUser.id
         })
         ref.child(snapshot.key).remove()
         return
@@ -63,20 +56,7 @@ const listen = module.exports = ({currentUser, myPlaylists}) => {
       })
       Promise
         .all(searches)
-        .then(results => {
-          return results.map(result => {
-            const track = result.body.tracks.items[0]
-            return {
-              id: track.id,
-              name: track.name,
-              uri: track.uri,
-              preview_url: track.preview_url,
-              artists: track.artists,
-              // image: track.album.images[track.album.images.length - 1]
-              image: track.album.images[1]
-            }
-          })
-        })
+        .then(processSearches)
         .then(tracks => {
           subData.tracks = tracks
           const uris = tracks.map(track => {
@@ -85,16 +65,8 @@ const listen = module.exports = ({currentUser, myPlaylists}) => {
           return spotifyApi.addTracksToPlaylist(currentUser.id, playlist.id, uris)
         })
         .then(result => {
-          logger.verbose('Added tracks to playlist!', subData.tracks)
-          logger.verbose('Sending confirmation to ', data.msg_from)
-          return sparky.transmissions.send({
-            campaign_id: 'jukepost',
-            content: {
-              template_id: 'juke-post-add'
-            },
-            substitution_data: subData,
-            recipients: [{ address: { email: data.msg_from } }]
-          })
+          logger.verbose(`Added ${subData.tracks.length} track(s) to playlist!`)
+          return sendConfirmation(data.msg_from, subData)
         })
         .catch(err => {
           logger.error('Something went wrong!', err)
@@ -102,6 +74,48 @@ const listen = module.exports = ({currentUser, myPlaylists}) => {
       ref.child(snapshot.key).remove()
     })
   }, err => {
-    logger.error(err)
+    logger.error('Error getting snapshot.', err)
+  })
+}
+
+const processSearches = (results) => {
+  return results
+    .filter(result => {
+      // Let's remove any searches that produced zero results
+      return result.body.tracks.items.length
+    })
+    .map(result => {
+      const track = result.body.tracks.items[0]
+      return {
+        id: track.id,
+        name: track.name,
+        uri: track.uri,
+        preview_url: track.preview_url,
+        artists: track.artists,
+        image: track.album.images[1] // track.album.images[track.album.images.length - 1]
+      }
+    })
+}
+
+const sendConfirmation = (recipient, subData) => {
+  logger.verbose('Sending confirmation to ', recipient)
+  return sparky.transmissions.send({
+    campaign_id: 'jukepost',
+    content: {
+      template_id: 'juke-post-add'
+    },
+    substitution_data: subData,
+    recipients: [{ address: { email: recipient } }]
+  })
+}
+
+const sendPlayListNotFound = (recipient, subData) => {
+  return sparky.transmissions.send({
+    campaign_id: 'jukepost',
+    content: {
+      template_id: 'juke-post-not-found'
+    },
+    substitution_data: subData,
+    recipients: [{ address: { email: recipient } }]
   })
 }
