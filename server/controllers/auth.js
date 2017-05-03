@@ -7,7 +7,7 @@ const listen = require('../listener')
 const logger = require('../config/logger')('verbose')
 const common = require('../common')
 const STATE_KEY = 'spotify_auth_state'
-const SPOTIFY_SCOPES = ['user-read-private', 'user-read-email', 'playlist-modify-public', 'playlist-read-collaborative']
+const SPOTIFY_SCOPES = ['user-read-private', 'user-read-email', 'playlist-modify-public', 'playlist-modify-private', 'playlist-read-collaborative']
 
 const controller = module.exports = {}
 
