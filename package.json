@@ -2,30 +2,20 @@
   "name": "jukepost",
   "version": "0.1.0",
   "engines": {
-    "node": "6.11.1"
+    "node": "8.5."
   },
   "private": true,
-  "devDependencies": {
-    "react-scripts": "^0.9.5"
-  },
+  "devDependencies": {},
   "dependencies": {
-    "body-parser": "^1.17.1",
-    "cookie-parser": "^1.4.3",
-    "express": "^4.15.2",
-    "firebase": "^3.7.2",
-    "querystring": "^0.2.0",
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2",
-    "request": "^2.81.0",
-    "sparkpost": "^2.1.2",
-    "spotify-web-api-node": "^2.3.5",
-    "winston": "^2.3.1"
+    "firebase": "^4.5.0",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
+    "react-scripts": "^1.0.14"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
-    "server": "node server/index.js"
+    "eject": "react-scripts eject"
   }
 }
